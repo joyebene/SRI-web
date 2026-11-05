@@ -821,9 +821,10 @@
                         <label class="flex items-start gap-3 text-sm leading-6 text-slate-500"><input type="checkbox"
                                 required class="mt-1 h-4 w-4 accent-forest"><span>I agree that Start Right Initiative
                                 may use the details I provide to respond to my registration.</span></label>
-                        <button type="submit"
-                            class="flex w-full items-center justify-center gap-3 rounded-full bg-forest px-6 py-2 font-bold text-white transition hover:bg-deepforest focus:outline-none focus:ring-4 focus:ring-forest/20">Submit
-                            free registration <span>↗</span></button>
+                        <button type="submit" id="submit-btn"
+                            class="flex w-full items-center justify-center gap-3 rounded-full bg-forest px-6 py-2 font-bold text-white transition hover:bg-deepforest focus:outline-none focus:ring-4 focus:ring-forest/20 disabled:cursor-not-allowed disabled:opacity-60">
+                            Submit free registration <span>↗</span>
+                        </button>
                         <p id="form-note" class="text-sm leading-6 text-slate-500" role="status" aria-live="polite">
                             Your information will be submitted securely.
                         </p>
@@ -958,25 +959,6 @@
         }));
         document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Demo submission: opens the visitor's email app with the form details pre-filled.
-        // Replace this placeholder with the initiative's real inbox before publishing.
-        document.getElementById('registration-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const form = new FormData(this);
-            const recipient = 'registrations@example.com';
-            const subject = encodeURIComponent('New Start Right Initiative Registration');
-            const body = encodeURIComponent(
-                'NEW REGISTRATION - START RIGHT INITIATIVE\\n\\n' +
-                'Full name: ' + (form.get('Full name') || '') + '\\n' +
-                'Email: ' + (form.get('Email') || '') + '\\n' +
-                'Phone number: ' + (form.get('Phone number') || '') + '\\n' +
-                'State / location: ' + (form.get('State or location') || '') + '\\n' +
-                'Programme of interest: ' + (form.get('Programme of interest') || '') + '\\n' +
-                'Additional information: ' + (form.get('Additional information') || '')
-            );
-            document.getElementById('form-note').textContent = 'Your email app should open with the registration details. This demo does not store submissions on the website.';
-            window.location.href = 'mailto:' + recipient + '?subject=' + subject + '&body=' + body;
-        });
     </script>
 
     <script>
