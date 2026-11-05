@@ -978,6 +978,57 @@
             window.location.href = 'mailto:' + recipient + '?subject=' + subject + '&body=' + body;
         });
     </script>
+
+    <script>
+        const registrationForm = document.getElementById("registration-form");
+        const submitBtn = document.getElementById("submit-btn");
+        const formNote = document.getElementById("form-note");
+
+        registrationForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "Submitting...";
+
+            formNote.textContent = "Please wait while we submit your registration.";
+            formNote.className = "text-sm text-slate-500";
+
+            try {
+                const response = await fetch(registrationForm.action, {
+                    method: "POST",
+                    body: new FormData(registrationForm),
+                    headers: {
+                        Accept: "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    formNote.textContent =
+                        "Registration successful! Thank you for your interest in Scale Up Africa. We will be in touch.";
+
+                    formNote.className = "text-sm font-semibold text-green-600";
+
+                    registrationForm.reset();
+                } else {
+                    const result = await response.json();
+
+                    formNote.textContent =
+                        result.errors?.map(error => error.message).join(", ") ||
+                        "Something went wrong. Please try again.";
+
+                    formNote.className = "text-sm font-semibold text-red-600";
+                }
+            } catch (error) {
+                formNote.textContent =
+                    "Unable to submit your registration. Please check your internet connection and try again.";
+
+                formNote.className = "text-sm font-semibold text-red-600";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit free registration <span>↗</span>';
+            }
+        });
+    </script>
 </body>
 
 </html>
