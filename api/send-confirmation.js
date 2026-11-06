@@ -34,6 +34,24 @@ export default async function handler(req, res) {
   const safeName = String(full_name).replace(/[<>&"']/g, "");
 
   try {
+    // Retrieve the ticket image from the deployed website
+    const ticketResponse = await fetch(
+      "https://www.startrightafricana.com/images/ticket.png"
+    );
+
+    if (!ticketResponse.ok) {
+      throw new Error(
+        `Ticket image could not be loaded. Status: ${ticketResponse.status}`
+      );
+    }
+
+    const ticketBuffer = Buffer.from(
+      await ticketResponse.arrayBuffer()
+    );
+
+    const ticketBase64 = ticketBuffer.toString("base64");
+
+
     const brevoResponse = await fetch(
       "https://api.brevo.com/v3/smtp/email",
       {
@@ -91,7 +109,13 @@ export default async function handler(req, res) {
                 Every strong future needs a right start.
               </div>
             </div>
-          `
+          `,
+          attachment: [
+            {
+              name: "Scale-Up-Africa-Ticket.png",
+              content: ticketBase64
+            }
+          ]
         })
       }
     );
