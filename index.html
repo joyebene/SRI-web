@@ -947,37 +947,43 @@
 
     </script>
 
-    <script>
-        const registrationForm = document.getElementById("registration-form");
-        const submitBtn = document.getElementById("submit-btn");
-        const formNote = document.getElementById("form-note");
+    <<script>
+    const registrationForm = document.getElementById("registration-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const formNote = document.getElementById("form-note");
 
-        registrationForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
+    registrationForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = "Submitting...";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
 
-            formNote.textContent = "Please wait while we submit your registration.";
-            formNote.className = "text-sm text-slate-500";
+        formNote.textContent =
+            "Please wait while we submit your registration.";
+        formNote.className = "text-sm text-slate-500";
 
-            try {
-                const response = await fetch(registrationForm.action, {
-                    method: "POST",
-                    body: new FormData(registrationForm),
-                    headers: {
-                        Accept: "application/json"
-                    }
-                });
+        // FIX: Declare formData before using it.
+        const formData = new FormData(registrationForm);
 
+        try {
+            // STEP 1: Submit registration to Formspree.
+            const response = await fetch(registrationForm.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Accept: "application/json"
+                }
+            });
 
-                if (response.ok) {
+            if (response.ok) {
 
-                    // Send confirmation email through Vercel and Brevo.
-                    let emailSent = false;
+                // STEP 2: Send confirmation email through Brevo.
+                let emailSent = false;
 
-                    try {
-                        const emailResponse = await fetch("/api/send-confirmation", {
+                try {
+                    const emailResponse = await fetch(
+                        "/api/send-confirmation",
+                        {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
@@ -986,48 +992,71 @@
                                 full_name: formData.get("full_name"),
                                 email: formData.get("email")
                             })
-                        });
+                        }
+                    );
 
-                        const emailResult = await emailResponse.json();
-                        emailSent = emailResponse.ok && emailResult.success;
+                    const emailResult = await emailResponse.json();
 
-                    } catch (error) {
-                        console.error("Confirmation email error:", error);
+                    emailSent =
+                        emailResponse.ok && emailResult.success === true;
+
+                    if (!emailSent) {
+                        console.error(
+                            "Brevo error:",
+                            emailResult.message
+                        );
                     }
 
-                    if (emailSent) {
-                        formNote.textContent =
-                            "Registration successful! Your confirmation email has been sent.";
-                    } else {
-                        formNote.textContent =
-                            "Your registration was received, but the confirmation email could not be sent. Please contact us if you need assistance.";
-                    }
-
-                    formNote.className = "text-sm font-semibold text-green-600";
-
-                    registrationForm.reset();
-
-                } else {
-                    const result = await response.json();
-
-                    formNote.textContent =
-                        result.errors?.map(error => error.message).join(", ") ||
-                        "Something went wrong. Please try again.";
-
-                    formNote.className = "text-sm font-semibold text-red-600";
+                } catch (emailError) {
+                    console.error(
+                        "Confirmation email error:",
+                        emailError
+                    );
                 }
 
-            } catch (error) {
-                formNote.textContent =
-                    "Unable to submit your registration. Please check your internet connection and try again.";
+                // STEP 3: Display registration result.
+                if (emailSent) {
+                    formNote.textContent =
+                        "Registration successful! Your confirmation email has been sent. Please check your inbox.";
 
-                formNote.className = "text-sm font-semibold text-red-600";
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit free registration <span>↗</span>';
+                } else {
+                    formNote.textContent =
+                        "Your registration was received successfully, but we could not send your confirmation email. Please check back later.";
+
+                }
+
+                formNote.className =
+                    "text-sm font-semibold text-green-600";
+
+                registrationForm.reset();
+
+            } else {
+                const result = await response.json();
+
+                formNote.textContent =
+                    result.errors?.map(error => error.message).join(", ") ||
+                    "Something went wrong. Please try again.";
+
+                formNote.className =
+                    "text-sm font-semibold text-red-600";
             }
-        });
-    </script>
+
+        } catch (error) {
+            console.error("Registration error:", error);
+
+            formNote.textContent =
+                "Unable to submit your registration. Please check your internet connection and try again.";
+
+            formNote.className =
+                "text-sm font-semibold text-red-600";
+
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML =
+                'Submit free registration <span>↗</span>';
+        }
+    });
+</script>
 </body>
 
 </html>
